@@ -445,7 +445,7 @@ def test_blocks_poly1dtype(sicd, poly1d_doc, kwargs):
     assert np.all(poly.Coefs == sicd.Position.ARPPoly.X.Coefs)
 
     # Setter
-    poly.Coefs = np.cast[np.float32](sicd.Position.ARPPoly.Y.Coefs)
+    poly.Coefs = np.asarray(sicd.Position.ARPPoly.Y.Coefs, dtype=np.float32)
     assert poly.Coefs.dtype.name == "float64"
 
     poly.Coefs = sicd.Position.ARPPoly.Y.Coefs
@@ -554,6 +554,12 @@ def test_blocks_poly1dtype(sicd, poly1d_doc, kwargs):
     poly.minimize_order()
     assert len(poly.Coefs) == 1
 
+def test_blocks_poly1dtype__eq__(sicd, poly1d_doc, kwargs):
+    # Smoke test
+    poly01 = blocks.Poly1DType(Coefs=sicd.Position.ARPPoly.X.Coefs)
+    poly02 = blocks.Poly1DType(Coefs=sicd.Position.ARPPoly.X.Coefs)
+    assert(poly01 == poly02)
+
 
 def test_blocks_poly2dtype(sicd, poly2d_doc, kwargs):
     # Smoke test
@@ -573,7 +579,7 @@ def test_blocks_poly2dtype(sicd, poly2d_doc, kwargs):
     # Setter
     poly.Coefs = sicd.Radiometric.RCSSFPoly.Coefs.tolist()
 
-    poly.Coefs = np.cast[np.float32](sicd.Radiometric.RCSSFPoly.Coefs)
+    poly.Coefs = np.asarray(sicd.Radiometric.RCSSFPoly.Coefs, np.float32)
     assert poly.Coefs.dtype.name == "float64"
 
     poly.Coefs = sicd.Radiometric.RCSSFPoly.Coefs

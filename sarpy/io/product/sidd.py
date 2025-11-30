@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 ########
 # module variables
 _class_priority = {'U': 0, 'R': 1, 'C': 2, 'S': 3, 'T': 4}
+SIDD_TYPES = (SIDDType1, SIDDType2, SIDDType3)
 
 
 #########
@@ -764,6 +765,8 @@ class SIDDWritingDetails(NITFWritingDetails):
         image_segment_indices = []
         total_image_count = starting_index
         for i, entry in enumerate(image_segment_limits):
+            image_segment_indices.append(total_image_count)
+            total_image_count += 1
             if i == 0:
                 iloc = '0000000000'
             else:
@@ -780,15 +783,13 @@ class SIDDWritingDetails(NITFWritingDetails):
                 IGEOLO=interpolate_corner_points_string(numpy.array(entry, dtype=numpy.int64), rows, cols, icp),
                 NPPBH=0 if this_cols > 8192 else this_cols,
                 NPPBV=0 if this_rows > 8192 else this_rows,
-                IDLVL=sidd_index + i + 2,
-                IALVL=sidd_index + i + 1,
+                IDLVL=total_image_count,
+                IALVL=0 if i == 0 else (total_image_count - 1),
                 ILOC=iloc,
                 Bands=ImageBands(values=[ImageBand(ISUBCAT='', IREPBAND=entry) for entry in irepband]),
                 Security=self._sidd_security_tags[sidd_index],
                 **basic_args)
             image_managers.append(ImageSubheaderManager(subhead))
-            image_segment_indices.append(total_image_count)
-            total_image_count += 1
         return image_managers, tuple(image_segment_indices), image_segment_limits
 
     def _create_image_segments(self) -> Tuple[Tuple[ImageSubheaderManager, ...], Tuple[Tuple[int, ...], ...], Tuple[Tuple[Tuple[int, ...], ...]]]:
@@ -892,7 +893,8 @@ class SIDDWriter(NITFWriter):
                                 Sequence[SIDDType2], Sequence[SIDDType1]]] = None,
             sicd_meta: Optional[Union[SICDType, Sequence[SICDType]]] = None,
             sidd_writing_details: Optional[SIDDWritingDetails] = None,
-            check_existence: bool = True):
+            check_existence: bool = True,
+            in_memory: bool = None):
         """
 
         Parameters
@@ -903,6 +905,8 @@ class SIDDWriter(NITFWriter):
         sidd_writing_details : None|SIDDWritingDetails
         check_existence : bool
             Should we check if the given file already exists?
+        in_memory : bool
+            If True force in-memory writing, if False force file writing.
         """
 
         if sidd_meta is None and sidd_writing_details is None:
@@ -910,7 +914,7 @@ class SIDDWriter(NITFWriter):
         if sidd_writing_details is None:
             sidd_writing_details = SIDDWritingDetails(sidd_meta, sicd_meta=sicd_meta)
         NITFWriter.__init__(
-            self, file_object, sidd_writing_details, check_existence=check_existence)
+            self, file_object, sidd_writing_details, check_existence=check_existence, in_memory=in_memory)
 
     @property
     def nitf_writing_details(self) -> SIDDWritingDetails:

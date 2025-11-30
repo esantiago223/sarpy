@@ -88,7 +88,7 @@ MIT license.
 
 Dependencies
 ------------
-The core library functionality depends only on `numpy >= 1.11.0` and `scipy`. 
+The core library functionality depends only on `numpy` and `scipy`. 
 
 Optional Dependencies and Behavior
 ----------------------------------
@@ -114,8 +114,9 @@ message indicating the missing optional dependency.
   data in hdf5 format require the `h5py` package, this includes Cosmo-Skymed, ICEYE, 
   and NISAR data.
 
-- Reading an image segment in a NITF file using jpeg or jpeg 2000 compression 
-  and/or writing a kmz image overlay requires the `pillow` package.
+- Reading an image segment in a NITF file using jpeg or jpeg 2000 compression,
+  reading a GeoTIFF DEM, and/or writing a kmz image overlay requires the `pillow` 
+  package.
 
 - CPHD consistency checks, presented in the `sarpy.consistency` module, depend on 
   `lxml>=4.1.1`, `networkx>=2.5`, `shapely>=1.6.4`, and `pytest>=3.3.2`. Note that these
@@ -147,13 +148,13 @@ package update mechanism, while `python setup.py install` **does not**.
 Issues and Bugs
 ---------------
 Support for Python 2 has been dropped. The core sarpy functionality has been 
-tested for Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11. 
+tested for Python 3.8, 3.9, 3.10, 3.11, 3.12.
 
 Changes to sarpy for the sole purpose of supporting a Python version beyond 
 end-of-life are unlikely to be considered.
 
 Information regarding any discovered bugs would be greatly appreciated, so please
-feel free to create a GitHub issue. If more appropriate, contact wade.c.schwartzkopf@nga.mil.
+feel free to create a GitHub issue. If more appropriate, contact richard.m.naething@nga.mil.
 
 Integration Branches
 --------------------

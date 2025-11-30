@@ -8,7 +8,7 @@ __author__ = "Thomas McCullough"
 
 import re
 import logging
-from datetime import datetime
+import datetime
 from typing import BinaryIO, Union, Optional, Dict, Tuple, Sequence
 
 import numpy
@@ -92,7 +92,7 @@ class AmpLookupFunction(ComplexFormatFunction):
         if lookup_table.dtype.name not in ['float32', 'float64']:
             raise ValueError('requires a numpy.ndarray of float32 or 64 dtype, got {}'.format(lookup_table.dtype))
         if lookup_table.dtype.name != 'float32':
-            lookup_table = numpy.cast['float32'](lookup_table)
+            lookup_table = numpy.asarray(lookup_table, dtype=numpy.float32)
         if lookup_table.shape != (256,):
             raise ValueError('Requires a one-dimensional numpy.ndarray with 256 elements, '
                              'got shape {}'.format(lookup_table.shape))
@@ -475,15 +475,17 @@ def validate_sicd_for_writing(sicd_meta: SICDType) -> SICDType:
     sicd_meta = sicd_meta.copy()
 
     profile = '{} {}'.format(__title__, __version__)
+    # use naive datetime because numpy warns about parsing timezone aware
+    now = numpy.datetime64(datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None))
     if sicd_meta.ImageCreation is None:
         sicd_meta.ImageCreation = ImageCreationType(
             Application=profile,
-            DateTime=numpy.datetime64(datetime.now()),
+            DateTime=now,
             Profile=profile)
     else:
         sicd_meta.ImageCreation.Profile = profile
         if sicd_meta.ImageCreation.DateTime is None:
-            sicd_meta.ImageCreation.DateTime = numpy.datetime64(datetime.now())
+            sicd_meta.ImageCreation.DateTime = now
     return sicd_meta
 
 
@@ -863,7 +865,8 @@ class SICDWriter(NITFWriter):
             sicd_meta: Optional[SICDType] = None,
             sicd_writing_details: Optional[SICDWritingDetails] = None,
             check_older_version: bool = False,
-            check_existence: bool = True):
+            check_existence: bool = True,
+            in_memory: bool = None):
         """
 
         Parameters
@@ -876,6 +879,8 @@ class SICDWriter(NITFWriter):
             NGA applications like SOCET or RemoteView
         check_existence : bool
             Should we check if the given file already exists?
+        in_memory : bool
+            If True force in-memory writing, if False force file writing.
         """
 
         if sicd_meta is None and sicd_writing_details is None:
@@ -883,7 +888,7 @@ class SICDWriter(NITFWriter):
         if sicd_writing_details is None:
             sicd_writing_details = SICDWritingDetails(sicd_meta, check_older_version=check_older_version)
         NITFWriter.__init__(
-            self, file_object, sicd_writing_details, check_existence=check_existence)
+            self, file_object, sicd_writing_details, check_existence=check_existence, in_memory=in_memory)
 
     @property
     def nitf_writing_details(self) -> SICDWritingDetails:
